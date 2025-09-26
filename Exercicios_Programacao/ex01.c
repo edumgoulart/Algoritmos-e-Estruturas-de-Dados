@@ -10,8 +10,7 @@ void AdicionarNome( void );
 void RemoverNome( void );
 void ListarNomes( void );
 
-int numNomes = 0;
-char *nomes;
+char *nomes = NULL;
 int tamTotalNomes = 1; //Contar o tamanho total da string de nomes, número de caracteres + \0
 
 int main(){
@@ -54,13 +53,15 @@ void Menu( void ){
 }
 
 void AdicionarNome( void ){
+    //Nome que vai adicionar
     char nome[50];
     printf( "Digite o nome que você deseja adicionar:\n" );
     scanf( "%s", nome );
-    numNomes++;
-    int tamNome = strlen( nome );
+
+    int tamNome = strlen( nome ) + 1;//+1 do espaço
     tamTotalNomes += tamNome;
     nomes = ( char * ) realloc( nomes, tamTotalNomes * sizeof(char) );
+
     strcat( nome, " " ); //Um Byte a mais desnecessário no fim para o espaço
     strcat( nomes, nome );
 }
@@ -69,15 +70,24 @@ void RemoverNome( void ){
     char nome[50];
     char *ponteiroNomeInicio, *ponteiroNomeFim;
     int tamNomesAteFim;
+    int tamnomes = strlen(nomes);
+
+    //Nome que vai remover
     printf( "Digite o nome que você deseja remover:\n" );
     scanf( "%s", nome );
+
+    //O ponteiroNomeInicio vai apontar para o nome encontrado pelo strstr
     ponteiroNomeInicio = strstr( nomes, nome );
+    //O ponteiroNomeFim vai apontar para o começo do outro nome logo após do selecionado
     ponteiroNomeFim = ponteiroNomeInicio + strlen(nome) *  sizeof(char) + 1;
+    //Variavel que mede a quantidade de caracteres depois do nome selecionado até o /0
     tamNomesAteFim = strlen(ponteiroNomeFim);
-    memmove(ponteiroNomeInicio, ponteiroNomeFim, tamNomesAteFim + 1);
-    nomes = ( char * ) realloc( nomes, (strlen(nomes) - strlen(nome) - 1) * sizeof(char) );
+    //Tudo que está depois do nome que vai ser removido sobrescreve o nome, começando agora onde o nome que vai ser removido começa
+    memmove(ponteiroNomeInicio, ponteiroNomeFim, tamNomesAteFim + 1);//+1 do /0
+    nomes = ( char * ) realloc( nomes, (tamnomes - strlen(nome) - 1) * sizeof(char) );
 }
 
 void ListarNomes( void ){
-    printf( "%s\n", nomes );
+    if( nomes != NULL )
+        printf( "%s\n", nomes );
 }
