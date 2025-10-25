@@ -5,7 +5,7 @@
 // PBuffer = operação | numPessoas | valoresPessoas
 //  sizeof     int         int        20*char+int+20*char
 
-void Menu( void * pBuffer ){
+void Menu( void * pBuffer, void * numPessoas ){
 
     printf( "Selecione a operação: " );
     printf( "1. Adicionar Pessoa" );
@@ -17,7 +17,7 @@ void Menu( void * pBuffer ){
 
     switch ( *( int* )pBuffer ){
         case 1:
-            AdicionarPessoa( pBuffer );
+            pBuffer = AdicionarPessoa( pBuffer , numPessoas );
             break;
         case 2:
             RemoverPessoa( pBuffer );
@@ -36,11 +36,29 @@ void Menu( void * pBuffer ){
     }
 }
 
-void AdicionarPessoa( void * pBuffer ){
+void * AdicionarPessoa( void * pBuffer, void * numPessoas ){
     //numPessoas++
-     ( *( int * )( pBuffer + sizeof( int ) ) )++;
+     ( *( int * )numPessoas )++;
 
-    pBuffer = realloc( pBuffer, 2 * sizeof( int ) + ( *( int * )( pBuffer + sizeof( int ) ) ) * ( 40 * sizeof( char ) + sizeof( int ) ) );
+    //  Aloque o espaço de:       op e numP       +         numPessoas       *   nome, idade, email
+    pBuffer = realloc( pBuffer, 2 * sizeof( int ) + ( *( int * )numPessoas ) * ( 40 * sizeof( char ) + sizeof( int ) ) );
+
+    //pessoaAtual vai apontar depois:  op e numPessoas +    ( numPessoas - 1 )            *   tamanho Pessoa
+    void * pessoaAtual = ( pBuffer + 2 * sizeof( int ) + ( ( *( int * )numPessoas ) - 1 ) * ( 40 * sizeof( char ) + sizeof( int ) ) );
+
+    printf( "Digite o nome da pessoa: " );
+    //Guarda o nome
+    scanf("%s", pessoaAtual);
+
+    printf( "Digite a idade da pessoa: " );
+    //Guarda idade após o nome
+    scanf("%d", ( pessoaAtual + sizeof( char ) * 20 ) );
+
+    printf( "Digite o email da pessoa: " );
+    //Guarda email após o nome e idade
+    scanf( "%s", ( pessoaAtual + sizeof( char ) * 20  + sizeof( int ) ) );
+
+    return pBuffer;
 
 }
 
@@ -61,10 +79,13 @@ int main(){
     //pBuffer -> operação
     void * pBuffer = malloc( 2 * sizeof( int ) );
 
+    //numPessoas -> espaço após operação
+    void * numPessoas = ( pBuffer + sizeof( int ) );
+
     //numPessoas = 0
-    *( int* )( pBuffer + sizeof( int ) ) = 0;
+    *( int * )numPessoas = 0;
 
     while(1){
-        Menu( pBuffer );
+        Menu( pBuffer , numPessoas );
     }
 }
