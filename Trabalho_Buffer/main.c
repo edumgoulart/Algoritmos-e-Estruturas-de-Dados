@@ -1,9 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TAM_VARIAVEIS ( 2 * sizeof( int ) )
+#define TAM_NOME ( 50 * sizeof( char ) )
+#define TAM_IDADE ( sizeof(int) )
+#define TAM_EMAIL ( 50 * sizeof( char ) )
+#define INT_1 ( *( int * )pBuffer )
+#define NUM_PESSOAS ( *( int * )numPessoas )
 
-// PBuffer = operação | numPessoas | valoresPessoas
-//  sizeof     int         int        20*char+int+20*char
+// PBuffer =  INT_1   | NUM_PESSOAS  | valoresPessoas( Nome , Idade , Email )
+//  sizeof     int         int                      50*char + int  + 50*char
 
 void Menu( void * pBuffer, void * numPessoas ){
 
@@ -15,7 +21,7 @@ void Menu( void * pBuffer, void * numPessoas ){
     printf( "5. Sair" );
     scanf( "%d" , pBuffer );
 
-    switch ( *( int* )pBuffer ){
+    switch ( INT_1 ){
         case 1:
             pBuffer = AdicionarPessoa( pBuffer , numPessoas );
             break;
@@ -37,37 +43,37 @@ void Menu( void * pBuffer, void * numPessoas ){
 }
 
 void * AdicionarPessoa( void * pBuffer, void * numPessoas ){
-    //numPessoas++
-     ( *( int * )numPessoas )++;
+    // numPessoas++
+     NUM_PESSOAS++;
 
-    //  Aloque o espaço de:       op e numP       +         numPessoas       *   nome, idade, email
-    pBuffer = realloc( pBuffer, 2 * sizeof( int ) + ( *( int * )numPessoas ) * ( 40 * sizeof( char ) + sizeof( int ) ) );
+    // Adiciona espaço para uma nova pessoa no Buffer
+    pBuffer = realloc( pBuffer, TAM_VARIAVEIS + NUM_PESSOAS * ( TAM_EMAIL + TAM_NOME + TAM_IDADE ) );
 
-    //pessoaAtual vai apontar depois:  op e numPessoas +    ( numPessoas - 1 )            *   tamanho Pessoa
-    void * pessoaAtual = ( pBuffer + 2 * sizeof( int ) + ( ( *( int * )numPessoas ) - 1 ) * ( 40 * sizeof( char ) + sizeof( int ) ) );
+    // pessoaAtual vai apontar para o novo espaço para pessoa no final da lista
+    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + ( NUM_PESSOAS - 1 ) * ( TAM_EMAIL + TAM_NOME + TAM_IDADE ) );
 
     printf( "Digite o nome da pessoa: " );
-    //Guarda o nome
+    // Guarda o nome no Buffer
     scanf("%s", pessoaAtual);
 
     printf( "Digite a idade da pessoa: " );
-    //Guarda idade após o nome
-    scanf("%d", ( pessoaAtual + sizeof( char ) * 20 ) );
+    // Guarda idade após o nome
+    scanf("%d", ( pessoaAtual + TAM_NOME ) );
 
     printf( "Digite o email da pessoa: " );
-    //Guarda email após o nome e idade
-    scanf( "%s", ( pessoaAtual + sizeof( char ) * 20  + sizeof( int ) ) );
+    // Guarda email após o nome e idade
+    scanf( "%s", ( pessoaAtual + TAM_NOME + TAM_IDADE ) );
 
     return pBuffer;
 
 }
 
 void RemoverPessoa( void * pBuffer ){
-    
+    //Remover Pelo Nome ou Indice? Pelo Indice só vai ter 1, mais facil
 }
 
 void BuscarPessoa( void * pBuffer ){
-    
+    //Busca pelo Nome se tem mais de 1 nome igual, retorna todos com seus respectivos indices
 }
 
 void ListarTodos( void * pBuffer ){
@@ -77,13 +83,13 @@ void ListarTodos( void * pBuffer ){
 int main(){
 
     //pBuffer -> operação
-    void * pBuffer = malloc( 2 * sizeof( int ) );
+    void * pBuffer = malloc( TAM_VARIAVEIS );
 
     //numPessoas -> espaço após operação
     void * numPessoas = ( pBuffer + sizeof( int ) );
 
     //numPessoas = 0
-    *( int * )numPessoas = 0;
+    NUM_PESSOAS = 0;
 
     while(1){
         Menu( pBuffer , numPessoas );
