@@ -6,24 +6,44 @@
 #define TAM_IDADE ( sizeof(int) )
 #define TAM_EMAIL ( 50 * sizeof( char ) )
 #define INT_1 ( *( int * )pBuffer )
-#define NUM_PESSOAS ( *( int * )numPessoas )
+#define NUM_PESSOAS ( *( int * )( pBuffer + sizeof( int ) ) )
 
 // PBuffer =  INT_1   | NUM_PESSOAS  | valoresPessoas( Nome , Idade , Email )
 //  sizeof     int         int                      50*char + int  + 50*char
 
-void Menu( void * pBuffer, void * numPessoas ){
+void * Menu( void * pBuffer );
+void * AdicionarPessoa( void * pBuffer );
+void RemoverPessoa( void * pBuffer );
+void BuscarPessoa( void * pBuffer );
+void ListarTodos( void * pBuffer );
 
+int main(){
+
+    //pBuffer -> operação
+    void * pBuffer = malloc( TAM_VARIAVEIS );
+
+    //numPessoas = 0
+    NUM_PESSOAS = 0;
+
+    while(1){
+        pBuffer = Menu( pBuffer );
+    }
+}
+
+void * Menu( void * pBuffer ){
+    
+    printf( "1. Adicionar Pessoa\n" );
+    printf( "2. Remover Pessoa\n" );
+    printf( "3. Buscar Pessoa\n" );
+    printf( "4. Listar Todos\n" );
+    printf( "5. Sair\n" );
     printf( "Selecione a operação: " );
-    printf( "1. Adicionar Pessoa" );
-    printf( "2. Remover Pessoa" );
-    printf( "3. Buscar Pessoa" );
-    printf( "4. Listar Todos" );
-    printf( "5. Sair" );
-    scanf( "%d" , pBuffer );
+    scanf( "%d" , (int *)pBuffer );
+    printf("\n");
 
     switch ( INT_1 ){
         case 1:
-            pBuffer = AdicionarPessoa( pBuffer , numPessoas );
+            pBuffer = AdicionarPessoa( pBuffer );
             break;
         case 2:
             RemoverPessoa( pBuffer );
@@ -35,14 +55,16 @@ void Menu( void * pBuffer, void * numPessoas ){
             ListarTodos( pBuffer );
             break;
         case 5:
+            free(pBuffer);
             exit(0);
             break;
         default:
             break;
     }
+    return pBuffer;
 }
 
-void * AdicionarPessoa( void * pBuffer, void * numPessoas ){
+void * AdicionarPessoa( void * pBuffer ){
     // numPessoas++
      NUM_PESSOAS++;
 
@@ -54,15 +76,15 @@ void * AdicionarPessoa( void * pBuffer, void * numPessoas ){
 
     printf( "Digite o nome da pessoa: " );
     // Guarda o nome no Buffer
-    scanf("%s", pessoaAtual);
+    scanf("%s", ( char * )pessoaAtual);
 
     printf( "Digite a idade da pessoa: " );
     // Guarda idade após o nome
-    scanf("%d", ( pessoaAtual + TAM_NOME ) );
+    scanf("%d", ( int * )( pessoaAtual + TAM_NOME ) );
 
     printf( "Digite o email da pessoa: " );
     // Guarda email após o nome e idade
-    scanf( "%s", ( pessoaAtual + TAM_NOME + TAM_IDADE ) );
+    scanf( "%s", ( char * )( pessoaAtual + TAM_NOME + TAM_IDADE ) );
 
     return pBuffer;
 
@@ -77,21 +99,15 @@ void BuscarPessoa( void * pBuffer ){
 }
 
 void ListarTodos( void * pBuffer ){
-    
-}
 
-int main(){
+    if( NUM_PESSOAS == 0 ) printf("Nenhuma Pessoa adicionada a lista\n\n");
+    for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
 
-    //pBuffer -> operação
-    void * pBuffer = malloc( TAM_VARIAVEIS );
+        void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * ( TAM_NOME + TAM_IDADE + TAM_EMAIL ) );
 
-    //numPessoas -> espaço após operação
-    void * numPessoas = ( pBuffer + sizeof( int ) );
-
-    //numPessoas = 0
-    NUM_PESSOAS = 0;
-
-    while(1){
-        Menu( pBuffer , numPessoas );
+        printf( "%d.\n", INT_1 );
+        printf( " Nome: %s\n" , (char *)pessoaAtual );
+        printf( " Idade: %d\n" , *(int *)( pessoaAtual + TAM_NOME ) );
+        printf( " Email: %s\n\n" , (char *)( pessoaAtual + TAM_NOME + TAM_IDADE ) );
     }
 }
