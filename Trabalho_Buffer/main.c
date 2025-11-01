@@ -7,6 +7,7 @@
 #define TAM_NOME ( 50 * sizeof( char ) ) //Alterar manualmente os scanf, caso mude o valor
 #define TAM_IDADE ( sizeof(int) )
 #define TAM_EMAIL ( 50 * sizeof( char ) )
+#define TAM_PESSOA ( TAM_NOME + TAM_IDADE + TAM_EMAIL )
 
 //Ponteiros para espaços na memórias prontos para usar
 #define INT_1 ( *( int * )pBuffer )
@@ -19,7 +20,7 @@
 
 void * Menu( void * pBuffer );
 void * AdicionarPessoa( void * pBuffer );
-void RemoverPessoa( void * pBuffer );
+void * RemoverPessoa( void * pBuffer );
 void BuscarPessoa( void * pBuffer );
 void ListarTodos( void * pBuffer );
 
@@ -52,7 +53,7 @@ void * Menu( void * pBuffer ){
             pBuffer = AdicionarPessoa( pBuffer );
             break;
         case 2:
-            RemoverPessoa( pBuffer );
+            pBuffer = RemoverPessoa( pBuffer );
             break;
         case 3:
             BuscarPessoa( pBuffer );
@@ -75,10 +76,10 @@ void * AdicionarPessoa( void * pBuffer ){
      NUM_PESSOAS++;
 
     // Adiciona espaço para uma nova pessoa no Buffer
-    pBuffer = realloc( pBuffer, TAM_VARIAVEIS + NUM_PESSOAS * ( TAM_EMAIL + TAM_NOME + TAM_IDADE ) );
+    pBuffer = realloc( pBuffer, TAM_VARIAVEIS + NUM_PESSOAS * TAM_PESSOA );
 
     // pessoaAtual vai apontar para o novo espaço para pessoa no final da lista
-    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + ( NUM_PESSOAS - 1 ) * ( TAM_EMAIL + TAM_NOME + TAM_IDADE ) );
+    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + ( NUM_PESSOAS - 1 ) * TAM_PESSOA );
 
     // Guarda os dados da pessoa em seus respectivos lugares no espaço a recém criado
     printf( "Digite o nome da pessoa: " );
@@ -95,8 +96,25 @@ void * AdicionarPessoa( void * pBuffer ){
 
 }
 
-void RemoverPessoa( void * pBuffer ){
-    //Remover Pelo Nome ou Indice? Pelo Indice só vai ter 1, mais facil
+void * RemoverPessoa( void * pBuffer ){
+    BuscarPessoa( pBuffer );
+    printf( "Digite o ID da pessoa que você deseja remover: " );
+    scanf( "%d", &INT_1 );
+    if( INT_1 >= NUM_PESSOAS || INT_1 < 0 ){
+        printf( "Esse ID não existe" );
+        return pBuffer;
+    }
+    //Aponta para pessoa que vai ser removida
+    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * TAM_PESSOA );
+
+    //Move memória que está atrás da pessoa (NUM_PESSOAS depois do ID) a ser removida, para pessoaAtual
+    memmove( pessoaAtual, ( pessoaAtual + TAM_PESSOA ), ( ( NUM_PESSOAS - ( INT_1 + 1 ) ) * TAM_PESSOA ) );
+    
+    NUM_PESSOAS--;
+
+    pBuffer = realloc( pBuffer, TAM_VARIAVEIS + NUM_PESSOAS * TAM_PESSOA );
+
+    return pBuffer;
 }
 
 void BuscarPessoa( void * pBuffer ){
@@ -106,7 +124,7 @@ void BuscarPessoa( void * pBuffer ){
 
     for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
 
-        void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * ( TAM_NOME + TAM_IDADE + TAM_EMAIL ) );
+        void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * TAM_PESSOA );
         
         if( strstr( pessoaAtual, NOME_PESSOA ) ){
             printf( "%d.\n", INT_1 );
@@ -124,7 +142,7 @@ void ListarTodos( void * pBuffer ){
 
     for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
 
-        void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * ( TAM_NOME + TAM_IDADE + TAM_EMAIL ) );
+        void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * TAM_PESSOA );
 
         printf( "%d.\n", INT_1 );
         printf( " Nome: %s\n" , (char *)pessoaAtual );
