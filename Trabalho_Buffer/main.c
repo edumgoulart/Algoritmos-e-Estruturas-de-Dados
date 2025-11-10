@@ -3,23 +3,20 @@
 #include <string.h>
 
 //Tamanho dos espaços que vão ser alocados na memória
-#define TAM_VARIAVEIS ( 5 * sizeof( int ) + 100 * sizeof( char ) )
-//#define TAM_NOME ( INT_1 * sizeof( char ) ) //Alterar manualmente os scanf, caso mude o valor
-//#define TAM_IDADE ( sizeof( int ) )
-//#define TAM_EMAIL ( INT_2 * sizeof( char ) )
-//#define TAM_PESSOA ( TAM_NOME + TAM_IDADE + TAM_EMAIL )
+#define TAM_VARIAVEIS ( 6 * sizeof( int ) + 100 * sizeof( char ) )
 
 //Ponteiros para espaços na memórias prontos para usar
 #define INT_1 ( *( int * )pBuffer )
 #define INT_2 ( *( int * )( pBuffer + sizeof( int ) ) )
 #define INT_3 ( *( int * )( pBuffer + 2 * sizeof( int ) ) )
-#define TAM_TOTAL ( *( int * )( pBuffer + 3 * sizeof( int ) ) )
-#define NUM_PESSOAS ( *( int * )( pBuffer + 4 * sizeof( int ) ) )
-#define NOME_PESSOA ( ( char * )( pBuffer + 5 * sizeof( int ) ) )
-#define NOME_EMAIL ( ( char * )( pBuffer + 5 * sizeof( int ) + 50 * sizeof( char ) ) )
+#define INT_4 ( *( int * )( pBuffer + 3 * sizeof( int ) ) )
+#define TAM_TOTAL ( *( int * )( pBuffer + 4 * sizeof( int ) ) )
+#define NUM_PESSOAS ( *( int * )( pBuffer + 5 * sizeof( int ) ) )
+#define NOME_PESSOA ( ( char * )( pBuffer + 6 * sizeof( int ) ) )
+#define NOME_EMAIL ( ( char * )( pBuffer + 6 * sizeof( int ) + 50 * sizeof( char ) ) )
 
-// PBuffer =  INT_1 |   INT_2  | INT_3 | TAM_TOTAL| NUM_PESSOAS  | NOME_PESSOA |       NOME_EMAIL     |      int               valoresPessoas( Nome , Idade , Email )
-//  sizeof     int       int     int        int       int          50*char            50*char          tam_nome + tam_email |    tam_nome*char + int  + tam_email*char
+// PBuffer =  INT_1 |   INT_2  | INT_3 | INT_4 | TAM_TOTAL| NUM_PESSOAS | NOME_PESSOA |  NOME_EMAIL  | valoresPessoas( Nome , Idade , Email )
+//  sizeof     int       int     int     int         int       int          50*char       50*char          tam_nome*char + int  + tam_email*char
 
 void * Menu( void * pBuffer );
 void * AdicionarPessoa( void * pBuffer );
@@ -95,14 +92,10 @@ void * AdicionarPessoa( void * pBuffer ){
      printf("\n");
 
     // Adiciona espaço para uma nova pessoa no Buffer
-    pBuffer = realloc( pBuffer, TAM_TOTAL + 2 * sizeof( int ) + ( INT_1 + INT_3 ) * sizeof( char ) );
+    pBuffer = realloc( pBuffer, TAM_TOTAL + sizeof( int ) + ( INT_1 + INT_3 ) * sizeof( char ) );
 
     // pessoaAtual vai apontar para o novo espaço para pessoa no final da lista
     void * pessoaAtual = ( pBuffer + TAM_TOTAL );
-
-    //Tamanho da nova pessoa adicionado | pessoaAtual aponta depois do int
-    *( int *)pessoaAtual = 2 * sizeof( int ) + ( INT_1 + INT_3 ) * sizeof( char );
-    pessoaAtual += sizeof( int );
 
     //Nome da pessoa adicionado | pessoaAtual aponta depois do \0
     strcpy(pessoaAtual, NOME_PESSOA);
@@ -112,70 +105,121 @@ void * AdicionarPessoa( void * pBuffer ){
     *( int *)pessoaAtual = INT_2;
     pessoaAtual += sizeof( int );
 
-    //Nome da pessoa adicionado | pessoaAtual aponta depois do \0
-    strcpy(pessoaAtual, NOME_PESSOA);
-    pessoaAtual += INT_1 * sizeof(char);
-
     //Email da pessoa adicionado
     strcpy(pessoaAtual, NOME_EMAIL);
 
-    TAM_TOTAL += 2 * sizeof( int ) + ( INT_1 + INT_3 ) * sizeof( char );
+    TAM_TOTAL += sizeof( int ) + ( INT_1 + INT_3 ) * sizeof( char );
 
     return pBuffer;
 
 }
 
 void * RemoverPessoa( void * pBuffer ){
-    // BuscarPessoa( pBuffer );
-    // printf( "Digite o ID da pessoa que você deseja remover: " );
-    // scanf( "%d", &INT_1 );
-    // if( INT_1 >= NUM_PESSOAS || INT_1 < 0 ){
-    //     printf( "Esse ID não existe" );
-    //     return pBuffer;
-    // }
-    // //Aponta para pessoa que vai ser removida
-    // void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * TAM_PESSOA );
+    BuscarPessoa( pBuffer );
+    printf( "Digite o ID da pessoa que você deseja remover: " );
+    scanf( "%d", &INT_1 );
+    if( INT_1 >= NUM_PESSOAS || INT_1 < 0 ){
+        printf( "Esse ID não existe" );
+        return pBuffer;
+    }
 
-    // //Move memória que está atrás da pessoa (NUM_PESSOAS depois do ID) a ser removida, para pessoaAtual
-    // memmove( pessoaAtual, ( pessoaAtual + TAM_PESSOA ), ( ( NUM_PESSOAS - ( INT_1 + 1 ) ) * TAM_PESSOA ) );
+    INT_4 = TAM_VARIAVEIS;
+
+    //pessoaAtual apontar para pessoa que vai ser removida
+    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS);
+    for( INT_2 = 0; INT_2 < INT_1; INT_2++ ){
+        //Anda na memória o nome e a idade
+        INT_3 = strlen( pessoaAtual ) + 1 + sizeof( int );
+        pessoaAtual += INT_3;
+        INT_4 += INT_3;
+
+        //Anda na memória o email
+        INT_3 = strlen( pessoaAtual ) + 1;
+        pessoaAtual += INT_3;
+        INT_4 += INT_3;
+    }
+
+    void * ponteiroCopia = pessoaAtual;
+    //INT_2 recebe o tamn do nome e da idade
+    INT_2 = strlen( ponteiroCopia ) + 1 + sizeof( int );
+    ponteiroCopia += INT_2;
+
+    //soma a INT_2 o tamanho do email
+    INT_2 += strlen( ponteiroCopia ) + 1;
+
+    INT_4 += INT_2;
+
+    //Move memória que está atrás da pessoa (NUM_PESSOAS depois do ID) a ser removida, para pessoaAtual
+    memmove( pessoaAtual, ( pessoaAtual + INT_2 ), ( TAM_TOTAL - INT_4 ) );
     
-    // NUM_PESSOAS--;
+    NUM_PESSOAS--;
+    TAM_TOTAL -= INT_2;
 
-    // pBuffer = realloc( pBuffer, TAM_VARIAVEIS + NUM_PESSOAS * TAM_PESSOA );
+    pBuffer = realloc( pBuffer, TAM_TOTAL );
 
-    // return pBuffer;
+    return pBuffer;
 }
 
 void BuscarPessoa( void * pBuffer ){
 
-    // printf( "Digite o nome da pessoa: " );
-    // scanf( " %49[^\n]", NOME_PESSOA );
+    printf( "Digite o nome da pessoa: " );
+    scanf( " %49[^\n]", NOME_PESSOA );
 
-    // for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
+    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS );
 
-    //     void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * TAM_PESSOA );
+    for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
         
-    //     if( strstr( pessoaAtual, NOME_PESSOA ) ){
-    //         printf( "%d.\n", INT_1 );
-    //         printf( " Nome: %s\n" , (char *)pessoaAtual );
-    //         printf( " Idade: %d\n" , *(int *)( pessoaAtual + TAM_NOME ) );
-    //         printf( " Email: %s\n\n" , (char *)( pessoaAtual + TAM_NOME + TAM_IDADE ) );
-    //     }
+        if( strstr( pessoaAtual, NOME_PESSOA ) ){
+
+            printf( "%d.\n", INT_1 );
+            printf( " Nome: %s\n" , ( char * )pessoaAtual );
+            INT_2 = strlen(pessoaAtual);
+            pessoaAtual += INT_2 + 1 ;
+
+            printf( " Idade: %d\n" , *( int * )( pessoaAtual ) );
+            pessoaAtual += sizeof( int );
+
+            printf( " Email: %s\n\n" , ( char * )( pessoaAtual ) );
+            INT_2 = strlen( pessoaAtual );
+            pessoaAtual += INT_2 + 1 ;
+
+        } else {
+
+            //Anda na memória o nome e a idade
+            INT_2 = strlen( pessoaAtual );
+            pessoaAtual += INT_2 + 1 + sizeof( int );
+
+            //Anda na memória o email
+            INT_2 = strlen( pessoaAtual );
+            pessoaAtual += INT_2 + 1;
+        }
        
-    // }
+    }
 }
 
 void ListarTodos( void * pBuffer ){
 
-    // if( NUM_PESSOAS == 0 ) printf("Nenhuma Pessoa adicionada a lista\n\n");
+    if( NUM_PESSOAS == 0 ){ 
+        printf("Nenhuma Pessoa adicionada a lista\n\n");
+        return;
+    }
 
-    // for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
+    void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS );
 
-    //     void * pessoaAtual = ( pBuffer + TAM_VARIAVEIS + INT_1 * TAM_PESSOA );
+    for( INT_1 = 0 ; INT_1 < NUM_PESSOAS ; INT_1++ ){
 
-    //     printf( "%d.\n", INT_1 );
-    //     printf( " Nome: %s\n" , (char *)pessoaAtual );
-    //     printf( " Idade: %d\n" , *(int *)( pessoaAtual + TAM_NOME ) );
-    //     printf( " Email: %s\n\n" , (char *)( pessoaAtual + TAM_NOME + TAM_IDADE ) );
-    // }
+        printf( "%d.\n", INT_1 );
+
+        printf( " Nome: %s\n" , ( char * )pessoaAtual );
+        INT_2 = strlen(( char * )pessoaAtual);
+        pessoaAtual += ( INT_2 + 1 ) * sizeof( char );
+
+        printf( " Idade: %d\n" , *( int * )pessoaAtual );
+        pessoaAtual += sizeof( int );
+
+        printf( " Email: %s\n\n" , ( char * )pessoaAtual );
+        INT_2 = strlen(( char * )pessoaAtual);
+        pessoaAtual += ( INT_2 + 1 ) * sizeof( char );
+
+    }
 }
