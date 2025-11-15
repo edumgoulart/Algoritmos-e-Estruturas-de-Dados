@@ -46,8 +46,8 @@ void * Menu( void * pBuffer ){
     printf( "4. Listar Todos\n" );
     printf( "5. Sair\n" );
     printf( "Selecione a operação: " );
-    scanf( "%d" , (int *)pBuffer );
-    printf("\n");
+    scanf( "%d" , &INT_1 );
+    printf( "\n" );
 
     switch ( INT_1 ){
         case 1:
@@ -63,7 +63,7 @@ void * Menu( void * pBuffer ){
             ListarTodos( pBuffer );
             break;
         case 5:
-            free(pBuffer);
+            free( pBuffer );
             exit(0);
             break;
         default:
@@ -82,14 +82,14 @@ void * AdicionarPessoa( void * pBuffer ){
      INT_1 = strlen( NOME_PESSOA ) + 1;
  
      printf( "Digite a idade da pessoa: " );
-     scanf("%d", &INT_2 );
+     scanf( "%d", &INT_2 );
  
      printf( "Digite o email da pessoa: " );
      scanf( " %[^\n]", NOME_EMAIL );
  
      INT_3 = strlen( NOME_EMAIL ) + 1;
 
-     printf("\n");
+     printf( "\n" );
 
     // Adiciona espaço para uma nova pessoa no Buffer
     pBuffer = realloc( pBuffer, TAM_TOTAL + sizeof( int ) + ( INT_1 + INT_3 ) * sizeof( char ) );
@@ -98,8 +98,8 @@ void * AdicionarPessoa( void * pBuffer ){
     void * pessoaAtual = ( pBuffer + TAM_TOTAL );
 
     //Nome da pessoa adicionado | pessoaAtual aponta depois do \0
-    strcpy(pessoaAtual, NOME_PESSOA);
-    pessoaAtual += INT_1 * sizeof(char);
+    strcpy( pessoaAtual, NOME_PESSOA );
+    pessoaAtual += INT_1 * sizeof( char );
 
     //Idade da nova pessoa adicionado | pessoaAtual aponta depois da idade
     *( int *)pessoaAtual = INT_2;
@@ -119,7 +119,7 @@ void * RemoverPessoa( void * pBuffer ){
     printf( "Digite o ID da pessoa que você deseja remover: " );
     scanf( "%d", &INT_1 );
     if( INT_1 >= NUM_PESSOAS || INT_1 < 0 ){
-        printf( "Esse ID não existe" );
+        printf( "Esse ID não existe\n\n" );
         return pBuffer;
     }
 
@@ -200,7 +200,7 @@ void BuscarPessoa( void * pBuffer ){
 void ListarTodos( void * pBuffer ){
 
     if( NUM_PESSOAS == 0 ){ 
-        printf("Nenhuma Pessoa adicionada a lista\n\n");
+        printf( "Nenhuma Pessoa adicionada a lista\n\n" );
         return;
     }
 
